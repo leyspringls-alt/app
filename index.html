@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<meta name="robots" content="noindex, nofollow">
+<title>Подключение</title>
+<!-- QR генерируется локально библиотекой qrcode.js (лежит в этой же папке) — без сторонних CDN.
+     Конфиг пользователя наружу не отправляется. Если qrcode.js отсутствует —
+     QR просто скрывается, а кнопка «Скопировать конфиг» работает всегда. -->
+<script src="qrcode.js"></script>
+<style>
+  :root{
+    --bg:#f4f6fb; --card:#ffffff; --text:#10141c; --muted:#5b6573;
+    --line:#e4e8f0; --accent:#2f6df6; --accent-2:#13b08a;
+    --chip:#eef2f9; --chip-on:#2f6df6; --chip-on-text:#ffffff;
+    --ok:#13b08a; --warn-bg:#fff6e6; --warn-line:#ffd98a; --warn-text:#7a5200;
+    --tip-bg:#eafaf4; --tip-line:#9fe1cb; --tip-text:#0f6e56;
+    --radius:16px; --shadow:0 8px 30px rgba(20,30,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0d1117; --card:#161b22; --text:#e8edf5; --muted:#9aa6b6;
+      --line:#272d38; --accent:#5b8bff; --accent-2:#3ad0aa;
+      --chip:#1f2632; --chip-on:#5b8bff; --chip-on-text:#0d1117;
+      --warn-bg:#2a2410; --warn-line:#5a4a18; --warn-text:#ffce6b;
+      --tip-bg:#11241d; --tip-line:#1d5a47; --tip-text:#5dcaa5;
+      --shadow:0 8px 30px rgba(0,0,0,.35);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,system-ui,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:18px 14px 60px;
+  }
+  .wrap{max-width:660px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+        box-shadow:var(--shadow);padding:22px;margin-bottom:16px}
+  header.card{display:flex;align-items:center;gap:14px}
+  .logo{width:46px;height:46px;flex:0 0 auto;border-radius:12px;
+        background:linear-gradient(135deg,var(--accent),var(--accent-2));
+        display:flex;align-items:center;justify-content:center}
+  .logo svg{width:26px;height:26px}
+  h1{font-size:20px;margin:0;font-weight:700}
+  .sub{color:var(--muted);font-size:13.5px;margin-top:2px}
+  h2{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+     margin:0 0 10px;font-weight:600}
+  .seg{display:flex;gap:8px;flex-wrap:wrap}
+  .seg button{flex:1 1 auto;min-width:84px;border:1px solid var(--line);background:var(--chip);
+    color:var(--text);padding:11px 10px;border-radius:12px;font-size:14px;font-weight:600;
+    cursor:pointer;transition:.12s;display:flex;align-items:center;justify-content:center;gap:6px}
+  .seg button:hover{border-color:var(--accent)}
+  .seg button.on{background:var(--chip-on);color:var(--chip-on-text);border-color:transparent}
+  .seg button:disabled{opacity:.4;cursor:not-allowed}
+  .seg button small{font-weight:500;opacity:.8;font-size:11px}
+  .client{display:flex;align-items:center;justify-content:space-between;gap:12px;
+          flex-wrap:wrap;margin-bottom:18px}
+  .client .name{font-size:16px;font-weight:700}
+  .client .name span{display:block;font-size:12.5px;color:var(--muted);font-weight:500}
+  .btn{appearance:none;border:none;border-radius:12px;padding:12px 16px;font-size:14px;
+       font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;
+       gap:8px;justify-content:center;transition:.12s}
+  .btn.primary{background:var(--accent);color:#fff;width:100%}
+  .btn.primary:hover{filter:brightness(1.05)}
+  .btn.ghost{background:var(--chip);color:var(--text);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--accent)}
+  .btn.sm{padding:9px 12px;font-size:13px}
+  .qr-wrap{text-align:center;margin:6px 0 16px}
+  .qr-box{display:inline-block;background:#fff;padding:14px;border-radius:14px;
+          border:1px solid var(--line)}
+  .qr-box svg{width:188px;height:188px;display:block}
+  .qr-cap{color:var(--muted);font-size:12.5px;margin-top:8px}
+  .copyrow{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .dlrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .copyrow .btn{flex:1 1 auto}
+  ol.steps{margin:0;padding-left:0;list-style:none;counter-reset:s}
+  ol.steps li{counter-increment:s;position:relative;padding:0 0 14px 38px;font-size:14.5px}
+  ol.steps li:before{content:counter(s);position:absolute;left:0;top:-2px;width:26px;height:26px;
+    background:var(--chip);border:1px solid var(--line);border-radius:50%;display:flex;
+    align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--accent)}
+  ol.steps li:last-child{padding-bottom:0}
+  ol.steps b{font-weight:700}
+  .tip{background:var(--tip-bg);border:1px solid var(--tip-line);color:var(--tip-text);
+       border-radius:12px;padding:12px 14px;font-size:13.5px;margin-top:18px}
+  .tip b{font-weight:700}
+  .adv{margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--chip)}
+  .adv summary{cursor:pointer;font-weight:600;font-size:13.5px;list-style:none;user-select:none}
+  .adv summary::-webkit-details-marker{display:none}
+  .adv summary:before{content:"⚙ "}
+  .adv .advbody{margin-top:10px;font-size:13.5px;line-height:1.55}
+  .adv .advbody b{font-weight:700}
+  .banner{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-text);
+          border-radius:12px;padding:12px 14px;font-size:13.5px;margin-bottom:16px}
+  a{color:var(--accent)}
+  .foot{color:var(--muted);font-size:12.5px;text-align:center;margin-top:6px}
+  .lockmsg{margin:0;color:var(--muted);font-size:14.5px;line-height:1.6}
+  details.admin{margin-top:14px;border-top:1px dashed var(--line);padding-top:14px}
+  details.admin summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;
+                        list-style:none;user-select:none}
+  details.admin summary::-webkit-details-marker{display:none}
+  details.admin summary:before{content:"⚙ "}
+  .field{margin-top:12px}
+  .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px;font-weight:600}
+  .field input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;
+    background:var(--bg);color:var(--text);font-size:13.5px;font-family:inherit}
+  .out{margin-top:12px;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+       padding:12px;font-size:12.5px;word-break:break-all;display:none}
+  .out.show{display:block}
+  .hide{display:none!important}
+  .flash{background:var(--ok)!important;color:#fff!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="card">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <path d="M9 12l2 2 4-4"/>
+      </svg>
+    </div>
+    <div>
+      <h1 id="greeting">Подключение</h1>
+      <div class="sub" id="subtitle">Выберите устройство и подключитесь за минуту</div>
+    </div>
+  </header>
+
+  <div class="card" id="locked" style="display:none">
+    <p class="lockmsg">Эта страница открывается по персональной ссылке.
+    Откройте ссылку, которую вам отправили, чтобы продолжить настройку.</p>
+  </div>
+
+  <div id="main">
+  <div class="card">
+    <div class="banner" id="demoBanner">
+      <b>Демо-режим.</b> Это пример. Для реального подключения откройте
+      персональную ссылку, которую вам отправили.
+    </div>
+
+    <h2>Сервер</h2>
+    <div class="seg" id="serverSeg" style="margin-bottom:18px">
+      <button data-server="nl" class="on">🇳🇱 Нидерланды <small>основной</small></button>
+      <button data-server="us">🇺🇸 США <small>резерв</small></button>
+    </div>
+
+    <h2>Устройство</h2>
+    <div class="seg" id="deviceSeg">
+      <button data-device="windows" class="on">🖥 Windows</button>
+      <button data-device="android">🤖 Android</button>
+      <button data-device="tv">📺 Android TV</button>
+      <button data-device="ios">📱 iPhone</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="client">
+      <div class="name" id="clientName">Клиент</div>
+      <div class="dlrow" id="clientDl"></div>
+    </div>
+
+    <div class="qr-wrap" id="qrWrap">
+      <div class="qr-box" id="qrBox"></div>
+      <div class="qr-cap" id="qrCap">Отсканируйте QR в приложении</div>
+    </div>
+
+    <div class="copyrow">
+      <button class="btn primary" id="copyCfg">📋 Скопировать конфиг</button>
+    </div>
+
+    <ol class="steps" id="steps"></ol>
+
+    <div class="tip">
+      <b>Совет:</b> добавьте <u>оба</u> сервера и включите авто-выбор (Test / URL test) —
+      если один недоступен, приложение само переключится на другой.
+    </div>
+
+    <details class="adv">
+      <summary>Раздельное туннелирование (по приложениям)</summary>
+      <div class="advbody" id="splitBody"></div>
+    </details>
+
+    <div class="foot" id="ovpnNote" style="margin-top:14px">
+      Не подключается ни на одном сервере? Напишите тому, кто выдал ссылку —
+      пришлём запасной вариант.
+    </div>
+  </div>
+  </div><!-- /#main -->
+
+  <div class="card" id="adminCard" style="display:none">
+    <details class="admin">
+      <summary>Для администратора — создать персональную ссылку</summary>
+      <div class="field">
+        <label>Имя пользователя (необязательно)</label>
+        <input id="aName" placeholder="Иван" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>vless-ссылка — Нидерланды (основной)</label>
+        <input id="aNl" placeholder="vless://...#VPN-NL" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>vless-ссылка — США (резерв)</label>
+        <input id="aUs" placeholder="vless://...#VPN-US" autocomplete="off">
+      </div>
+      <div class="copyrow" style="margin-top:14px;margin-bottom:0">
+        <button class="btn primary" id="aGen">🔗 Создать ссылку</button>
+      </div>
+      <div class="out" id="aOut"></div>
+      <div class="copyrow hide" id="aCopyRow" style="margin-top:10px;margin-bottom:0">
+        <button class="btn ghost sm" id="aCopy">📋 Скопировать ссылку</button>
+      </div>
+      <div class="foot" style="margin-top:12px;text-align:left">
+        Отправьте полученную ссылку пользователю любым удобным способом. В ней зашит
+        только его конфиг; ссылка открывает этот же портал уже с его профилем.
+      </div>
+    </details>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+/* ---------- утилиты base64url (UTF-8 безопасно) ---------- */
+function b64urlEncode(str){
+  var b64 = btoa(unescape(encodeURIComponent(str)));
+  return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function b64urlDecode(s){
+  s = s.replace(/-/g,'+').replace(/_/g,'/');
+  while(s.length % 4) s += '=';
+  return decodeURIComponent(escape(atob(s)));
+}
+
+/* ---------- демо-конфиг (когда ссылка без данных) ---------- */
+var DEMO = {
+  demo:true, name:'',
+  nl:'vless://11111111-2222-3333-4444-555555555555@198.51.100.10:443?type=tcp&security=reality&pbk=DEMOpublicKeyDEMOpublicKeyDEMOpublicKey0&fp=chrome&sni=www.microsoft.com&sid=a1b2c3d4&spx=%2F&flow=xtls-rprx-vision#VPN-NL',
+  us:'vless://11111111-2222-3333-4444-555555555555@203.0.113.20:443?type=tcp&security=reality&pbk=DEMOpublicKeyDEMOpublicKeyDEMOpublicKey0&fp=chrome&sni=www.microsoft.com&sid=a1b2c3d4&spx=%2F&flow=xtls-rprx-vision#VPN-US'
+};
+
+/* ---------- загрузка данных из ссылки (#d=...) ---------- */
+function loadData(){
+  try{
+    var h = location.hash.replace(/^#/,'');
+    var p = new URLSearchParams(h);
+    var d = p.get('d');
+    if(d){
+      var obj = JSON.parse(b64urlDecode(d));
+      if(obj && (obj.nl || obj.us)) return obj;
+    }
+  }catch(e){}
+  return null;
+}
+
+/* ---------- инструкции по устройствам ---------- */
+var DEVICES = {
+  windows:{
+    client:'v2rayN', clientSub:'для Windows 10/11',
+    downloads:[
+      {l:'Скачать (Windows)', u:'https://github.com/leyspringls-alt/app/releases/latest/download/v2rayN-windows.zip'},
+      {l:'Сайт v2rayN', u:'https://github.com/2dust/v2rayN/releases/latest'}
+    ],
+    split:'v2rayN направляет трафик по <b>правилам доменов/IP</b> (вкладка «Маршрутизация»), а не по приложениям. Чтобы выбирать именно приложения, используйте клиент <b>Hiddify</b> в режиме TUN: Settings → Per-app proxy.',
+    steps:[
+      'Скачайте <b>v2rayN</b> (кнопка справа сверху), распакуйте архив и запустите <b>v2rayN.exe</b>.',
+      'Нажмите кнопку <b>«Скопировать конфиг»</b> ниже.',
+      'В v2rayN: меню <b>«Серверы» → «Импорт из буфера обмена»</b> (или Ctrl+V).',
+      'Повторите для второго сервера, чтобы в списке были и Нидерланды, и США.',
+      'Выделите оба сервера → <b>«Серверы» → «Тест задержки» (Ctrl+T)</b>, выберите более быстрый (ПКМ → «Назначить активным»).',
+      'Справа внизу включите режим <b>«Системный прокси»</b>. Готово — проверьте на <a href="https://2ip.ru" target="_blank" rel="noopener">2ip.ru</a>.'
+    ]
+  },
+  android:{
+    client:'v2rayNG', clientSub:'Google Play / RuStore / GitHub',
+    downloads:[
+      {l:'Скачать APK', u:'https://github.com/leyspringls-alt/app/releases/latest/download/v2rayNG-arm64.apk'},
+      {l:'Google Play', u:'https://play.google.com/store/apps/details?id=com.v2ray.ang'}
+    ],
+    split:'Откройте настройки v2rayNG (значок ⚙) → <b>«Per-app proxy»</b>. Включите и выберите режим: через VPN <u>только отмеченные</u> приложения, либо <u>все, кроме отмеченных</u>. Отметьте приложения, сохраните и переподключитесь (▶).',
+    steps:[
+      'Установите <b>v2rayNG</b> из Google Play, RuStore или по кнопке справа сверху.',
+      'В приложении нажмите <b>«+»</b> вверху → <b>«Сканировать QR-код»</b> и наведите на QR выше.',
+      'Так же добавьте второй сервер (или нажмите «Скопировать конфиг» и выберите «Импорт из буфера обмена»).',
+      'Нажмите <b>«⋮» → «Проверить профили»</b> — приложение покажет задержку каждого сервера.',
+      'Выберите рабочий сервер и нажмите большую кнопку <b>▶</b> внизу, разрешите создание VPN. Готово.'
+    ]
+  },
+  tv:{
+    client:'v2rayNG', clientSub:'для Android TV (пульт)',
+    downloads:[
+      {l:'Скачать APK', u:'https://github.com/leyspringls-alt/app/releases/latest/download/v2rayNG-arm64.apk'},
+      {l:'Universal APK', u:'https://github.com/leyspringls-alt/app/releases/latest/download/v2rayNG-universal.apk'}
+    ],
+    split:'Так же, как на Android: настройки v2rayNG → <b>«Per-app proxy»</b> → выберите приложения (например, только онлайн-кинотеатр). Локальные сервисы и YouTube при этом идут напрямую.',
+    steps:[
+      'Установите <b>v2rayNG</b> на ТВ: из RuStore, либо через приложение <b>Downloader</b>, либо APK с USB-флешки.',
+      'Вводить QR с пульта неудобно — проще <b>импорт по ссылке</b>: нажмите «Скопировать конфиг», вставьте в v2rayNG через <b>«+» → «Импорт из буфера обмена»</b>.',
+      'Альтернатива: отсканируйте QR выше камерой <b>телефона</b> и перешлите ссылку на ТВ.',
+      'Добавьте оба сервера, затем <b>«⋮» → «Проверить профили»</b> и выберите рабочий.',
+      'Нажмите <b>▶</b>, разрешите VPN. Управление дальше — с пульта.'
+    ]
+  },
+  ios:{
+    client:'v2box или Streisand', clientSub:'App Store, бесплатно',
+    downloads:[
+      {l:'V2Box (App Store)', u:'https://apps.apple.com/app/id6446814690'},
+      {l:'Streisand (App Store)', u:'https://apps.apple.com/app/id6450534064'}
+    ],
+    split:'iOS не позволяет выбирать VPN <b>по приложениям</b>. Но есть маршрутизация <b>по правилам</b> (домены/страны) в разделе «Routing» клиента V2Box/Streisand — например, через VPN только нужные сайты, остальное напрямую.',
+    steps:[
+      'Установите <b>v2box</b> (или <b>Streisand</b>) из App Store. <i>Shadowrocket — платный и требует не-российский Apple ID.</i>',
+      'Нажмите «Скопировать конфиг» ниже, в v2box выберите <b>«+» → «Import from clipboard»</b> (или «Scan QR» для QR выше).',
+      'Добавьте оба сервера — Нидерланды и США.',
+      'Выберите сервер или режим авто-выбора.',
+      'Нажмите переключатель <b>Connect</b> и разрешите добавление VPN-профиля iOS. Готово.'
+    ]
+  }
+};
+
+var SERVERS = { nl:'Нидерланды', us:'США' };
+
+/* ---------- состояние ---------- */
+var qp = new URLSearchParams(location.search);
+var data = loadData();
+if(!data && qp.has('demo')) data = DEMO;   // демо-превью только при ?demo=1
+var state = {
+  device: localStorage.getItem('vpnportal.device') || 'windows',
+  server: localStorage.getItem('vpnportal.server') || 'nl'
+};
+if(!DEVICES[state.device]) state.device = 'windows';
+if(state.server !== 'nl' && state.server !== 'us') state.server = 'nl';
+
+/* ---------- генерация QR ---------- */
+function renderQR(text){
+  var box = document.getElementById('qrBox');
+  var wrap = document.getElementById('qrWrap');
+  var cap = document.getElementById('qrCap');
+  if(typeof qrcode === 'undefined' || !text){
+    wrap.classList.add('hide');
+    return;
+  }
+  try{
+    var q = qrcode(0, 'L');        // авто-версия, уровень коррекции L (вмещает длинные ссылки)
+    q.addData(text);
+    q.make();
+    box.innerHTML = q.createSvgTag({ cellSize:4, margin:1, scalable:true });
+    cap.textContent = 'Сервер: ' + SERVERS[state.server] + ' — отсканируйте в приложении';
+    wrap.classList.remove('hide');
+  }catch(e){
+    wrap.classList.add('hide');
+  }
+}
+
+/* ---------- основной рендер ---------- */
+function render(){
+  // приветствие / демо
+  document.getElementById('demoBanner').style.display = data.demo ? '' : 'none';
+  var g = document.getElementById('greeting');
+  var sub = document.getElementById('subtitle');
+  if(data.name){
+    g.textContent = 'Привет, ' + data.name + '!';
+  }else{
+    g.textContent = 'Подключение';
+  }
+  sub.textContent = 'Выберите устройство и подключитесь за минуту';
+
+  // доступность серверов
+  var segS = document.getElementById('serverSeg');
+  Array.prototype.forEach.call(segS.children, function(b){
+    var s = b.getAttribute('data-server');
+    var has = !!data[s];
+    b.disabled = !has;
+    b.classList.toggle('on', has && s === state.server);
+  });
+  if(!data[state.server]){ state.server = data.nl ? 'nl' : 'us'; render(); return; }
+
+  // устройство
+  var segD = document.getElementById('deviceSeg');
+  Array.prototype.forEach.call(segD.children, function(b){
+    b.classList.toggle('on', b.getAttribute('data-device') === state.device);
+  });
+
+  var dev = DEVICES[state.device];
+  document.getElementById('clientName').innerHTML = dev.client + '<span>' + dev.clientSub + '</span>';
+  var dl = document.getElementById('clientDl');
+  dl.innerHTML = '';
+  dev.downloads.forEach(function(d){
+    var a = document.createElement('a');
+    a.className = 'btn ghost sm';
+    a.href = d.u; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = '⬇ ' + d.l;
+    dl.appendChild(a);
+  });
+
+  // шаги
+  var ol = document.getElementById('steps');
+  ol.innerHTML = '';
+  dev.steps.forEach(function(s){
+    var li = document.createElement('li');
+    li.innerHTML = s;
+    ol.appendChild(li);
+  });
+
+  document.getElementById('splitBody').innerHTML = dev.split;
+
+  renderQR(data[state.server]);
+}
+
+/* ---------- копирование ---------- */
+function flash(btn, label){
+  var old = btn.textContent;
+  btn.textContent = label || '✓ Скопировано';
+  btn.classList.add('flash');
+  setTimeout(function(){ btn.textContent = old; btn.classList.remove('flash'); }, 1400);
+}
+function copyText(text, btn){
+  if(!text) return;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){ flash(btn); }).catch(function(){ legacyCopy(text, btn); });
+  }else{ legacyCopy(text, btn); }
+}
+function legacyCopy(text, btn){
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); flash(btn); }catch(e){}
+  document.body.removeChild(ta);
+}
+
+/* ---------- обработчики ---------- */
+document.getElementById('serverSeg').addEventListener('click', function(e){
+  var b = e.target.closest('button'); if(!b || b.disabled) return;
+  state.server = b.getAttribute('data-server');
+  localStorage.setItem('vpnportal.server', state.server);
+  render();
+});
+document.getElementById('deviceSeg').addEventListener('click', function(e){
+  var b = e.target.closest('button'); if(!b) return;
+  state.device = b.getAttribute('data-device');
+  localStorage.setItem('vpnportal.device', state.device);
+  render();
+});
+document.getElementById('copyCfg').addEventListener('click', function(){
+  if(!data) return;
+  copyText(data[state.server], this);
+});
+
+/* ---------- админ: генерация ссылки ---------- */
+document.getElementById('aGen').addEventListener('click', function(){
+  var name = document.getElementById('aName').value.trim();
+  var nl = document.getElementById('aNl').value.trim();
+  var us = document.getElementById('aUs').value.trim();
+  var out = document.getElementById('aOut');
+  if(!nl && !us){
+    out.classList.add('show'); out.textContent = 'Укажите хотя бы одну vless-ссылку.';
+    document.getElementById('aCopyRow').classList.add('hide');
+    return;
+  }
+  var payload = {}; if(name) payload.name = name; if(nl) payload.nl = nl; if(us) payload.us = us;
+  var base = location.origin + location.pathname;
+  var link = base + '#d=' + b64urlEncode(JSON.stringify(payload));
+  out.classList.add('show'); out.textContent = link;
+  out.dataset.link = link;
+  document.getElementById('aCopyRow').classList.remove('hide');
+});
+document.getElementById('aCopy').addEventListener('click', function(){
+  copyText(document.getElementById('aOut').dataset.link, this);
+});
+
+/* ---------- режимы отображения ---------- */
+// Панель администратора видна только при ?admin (генерация ссылок)
+document.getElementById('adminCard').style.display = qp.has('admin') ? '' : 'none';
+
+if(data){
+  document.getElementById('locked').style.display = 'none';
+  document.getElementById('main').style.display = '';
+  render();
+}else{
+  // нет персональной ссылки — нейтральная заглушка
+  document.getElementById('main').style.display = 'none';
+  document.getElementById('locked').style.display = '';
+  document.getElementById('greeting').textContent = 'Подключение';
+  document.getElementById('subtitle').textContent = 'Откройте персональную ссылку для продолжения';
+}
+</script>
+</body>
+</html>
