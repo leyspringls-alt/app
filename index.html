@@ -1,642 +1,492 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
 <meta name="robots" content="noindex, nofollow">
-<meta name="color-scheme" content="dark">
-<title>Zentra</title>
+<title>Подключение</title>
+<!-- QR генерируется локально библиотекой qrcode.js (лежит в этой же папке) — без сторонних CDN.
+     Конфиг пользователя наружу не отправляется. Если qrcode.js отсутствует —
+     QR просто скрывается, а кнопка «Скопировать конфиг» работает всегда. -->
 <script src="qrcode.js"></script>
 <style>
-:root{
-  --bg:#08090d;
-  --panel:#101116;
-  --panel-2:#17191f;
-  --line:#2a2e36;
-  --text:#f2f4f7;
-  --muted:#9ca3af;
-  --soft:#c6cad1;
-  --accent:#ffb36b;
-  --accent-2:#56f1dc;
-  --green:#38d27a;
-  --danger:#ff5c7a;
-  --shadow:0 18px 60px rgba(0,0,0,.45);
-  --radius:8px;
-}
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}
-body{
-  font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;
-  -webkit-font-smoothing:antialiased;
-  padding:0 0 96px;
-}
-button,input,textarea{font:inherit}
-button{cursor:pointer}
-a{color:var(--accent-2);text-decoration:none}
-.app{
-  width:min(100%,460px);
-  min-height:100svh;
-  margin:0 auto;
-  position:relative;
-  overflow:hidden;
-  background:
-    radial-gradient(circle at 85% 4%,rgba(86,241,220,.16),transparent 28%),
-    radial-gradient(circle at 10% 18%,rgba(255,179,107,.12),transparent 28%),
-    linear-gradient(180deg,#0a0b10 0%,#08090d 48%,#0b0c10 100%);
-}
-.app:before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px);
-  background-size:100% 44px;
-  pointer-events:none;
-  mask-image:linear-gradient(180deg,rgba(0,0,0,.75),transparent 70%);
-}
-.screen{display:none;position:relative;z-index:1;padding:28px 20px 18px}
-.screen.active{display:block}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
-.brand{display:flex;align-items:center;gap:12px}
-.brandmark{
-  width:42px;height:42px;border:1px solid rgba(86,241,220,.5);border-radius:8px;
-  display:grid;place-items:center;position:relative;background:#0d1014;box-shadow:0 0 28px rgba(86,241,220,.15)
-}
-.brandmark:before,.brandmark:after{
-  content:"";position:absolute;inset:6px;border:1px solid rgba(255,179,107,.55);border-radius:50%;
-  animation:spin 6s linear infinite
-}
-.brandmark:after{inset:12px;border-color:rgba(86,241,220,.7);animation-duration:4s;animation-direction:reverse}
-.brandmark span{font-size:18px;font-weight:800;color:var(--text);z-index:1}
-.brand h1{font-size:23px;line-height:1;margin:0;font-weight:800;letter-spacing:.2px}
-.brand small{display:block;color:var(--muted);font-size:12px;margin-top:5px}
-.iconbtn{
-  width:42px;height:42px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.035);
-  color:var(--text);display:grid;place-items:center
-}
-.iconbtn svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.hero{min-height:365px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-.status{font-size:14px;color:var(--muted);margin-bottom:28px}
-.connect{
-  width:218px;height:218px;border:0;border-radius:50%;color:var(--text);font-size:25px;font-weight:800;
-  background:radial-gradient(circle at 50% 50%,#11141a 0 48%,#090a0d 49% 100%);
-  position:relative;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 0 55px rgba(255,179,107,.18)
-}
-.connect:before{
-  content:"";position:absolute;inset:-7px;border-radius:50%;
-  background:conic-gradient(from 0deg,var(--accent),rgba(86,241,220,.2),var(--accent),rgba(255,255,255,.05),var(--accent));
-  filter:blur(.2px);animation:spin 5s linear infinite;z-index:-1
-}
-.connect:after{
-  content:"";position:absolute;inset:20px;border-radius:50%;border:1px solid rgba(255,255,255,.12)
-}
-.connect.connected{color:#06110d;background:radial-gradient(circle,#5af097 0 47%,#1bcf6b 48% 100%)}
-.connect.connected:before{background:conic-gradient(from 0deg,#52ff94,var(--accent-2),#52ff94)}
-.under-status{margin-top:28px;font-size:16px;color:var(--soft)}
-.under-status strong{display:block;color:var(--accent-2);font-size:14px;margin-bottom:8px}
-.quickrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px;width:100%}
-.home-actions{display:grid;gap:10px;width:100%;margin-top:12px}
-.home-actions button{width:100%}
-.tile,.panel{
-  background:rgba(19,21,27,.88);border:1px solid var(--line);border-radius:var(--radius);
-  box-shadow:var(--shadow)
-}
-.tile{padding:14px;text-align:left}
-.tile span{display:block;color:var(--muted);font-size:12px;margin-bottom:7px}
-.tile b{font-size:19px}
-.panel{padding:18px;margin-bottom:14px}
-.section-title{font-size:32px;line-height:1.06;margin:4px 0 10px;font-weight:850;letter-spacing:0}
-.section-copy{margin:0 0 22px;color:var(--muted);font-size:15px;line-height:1.55}
-.server{
-  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;
-  padding:17px 0;border-bottom:1px solid var(--line)
-}
-.server:last-child{border-bottom:0}
-.radio{
-  width:28px;height:28px;border:2px solid #747983;border-radius:50%;display:grid;place-items:center
-}
-.server.active .radio{border-color:var(--accent)}
-.server.active .radio:before{content:"";width:13px;height:13px;border-radius:50%;background:var(--accent);box-shadow:0 0 16px var(--accent)}
-.flag{
-  width:36px;height:26px;border-radius:4px;display:grid;place-items:center;font-size:11px;font-weight:800;
-  background:linear-gradient(180deg,#ca1f3d 0 33%,#fff 33% 66%,#1f4aa5 66% 100%);color:#111
-}
-.flag.us{background:linear-gradient(180deg,#214a9a 0 50%,#fff 50%);color:#111}
-.server-name b{font-size:21px;font-weight:700}
-.server-name span{display:block;color:var(--muted);font-size:13px;margin-top:3px}
-.pill{border:1px solid rgba(86,241,220,.35);color:var(--accent-2);border-radius:999px;padding:7px 10px;font-size:12px}
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0}
-.tabs button,.mode button{
-  border:1px solid var(--line);background:#11131a;color:var(--soft);border-radius:8px;padding:12px 10px;font-weight:700
-}
-.tabs button.active,.mode button.active{background:rgba(255,179,107,.16);border-color:rgba(255,179,107,.5);color:var(--accent)}
-.mode{display:grid;gap:10px;margin:14px 0}
-.mode button{text-align:left;line-height:1.35}
-.switch-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
-.switch{
-  width:62px;height:34px;border:1px solid var(--line);border-radius:999px;background:#12141a;position:relative;flex:0 0 auto
-}
-.switch:before{content:"";position:absolute;top:5px;left:5px;width:22px;height:22px;border-radius:50%;background:#d7dae0;transition:.18s}
-.switch.on{background:rgba(255,179,107,.38);border-color:rgba(255,179,107,.65)}
-.switch.on:before{left:33px;background:var(--accent)}
-.list{margin:16px 0}
-.list-item{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}
-.list-item:last-child{border-bottom:0}
-.delete{width:36px;height:36px;border:0;border-radius:8px;background:#1b1e25;color:var(--soft);font-size:22px}
-.inputrow{display:grid;grid-template-columns:1fr 58px;gap:8px;margin-top:14px}
-.inputrow input,.field input,.field textarea{
-  width:100%;border:1px solid var(--line);border-radius:8px;background:#11131a;color:var(--text);padding:14px
-}
-.inputrow button,.primary,.secondary{
-  border:0;border-radius:8px;padding:13px 14px;font-weight:800
-}
-.primary{background:var(--accent);color:#101014}
-.secondary{background:#171a21;color:var(--text);border:1px solid var(--line)}
-.qrwrap{display:grid;place-items:center;margin:16px 0}
-.qrbox{background:#fff;border-radius:8px;padding:14px}
-.qrbox svg{width:220px;height:220px;display:block}
-.steps{counter-reset:s;display:grid;gap:12px;margin:0;padding:0;list-style:none}
-.steps li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;color:var(--soft);line-height:1.45}
-.steps li:before{content:counter(s);width:28px;height:28px;border-radius:8px;background:#1d2028;color:var(--accent);display:grid;place-items:center;font-weight:800}
-.guide-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
-.select{display:flex;gap:8px;flex-wrap:wrap}
-.select button{border:1px solid var(--line);border-radius:8px;background:#11131a;color:var(--soft);padding:9px 11px;font-weight:750}
-.select button.active{color:#101014;background:var(--accent);border-color:var(--accent)}
-.field{margin:12px 0}
-.field label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
-.admin{display:none}
-.admin.active{display:block}
-.output{display:none;margin-top:12px;padding:13px;border:1px solid var(--line);border-radius:8px;background:#11131a;color:var(--soft);word-break:break-all;font-size:13px}
-.output.active{display:block}
-.locked{min-height:100svh;display:grid;place-items:center;padding:28px}
-.locked .panel{width:100%}
-.nav{
-  position:fixed;left:50%;bottom:0;transform:translateX(-50%);
-  width:min(100%,460px);z-index:5;background:rgba(18,20,26,.94);border-top:1px solid var(--line);
-  display:grid;grid-template-columns:repeat(4,1fr);padding:9px 10px 13px;backdrop-filter:blur(18px)
-}
-.nav button{border:0;background:transparent;color:var(--muted);display:grid;place-items:center;gap:5px;font-size:11px;font-weight:750}
-.nav button.active{color:var(--accent)}
-.nav svg{width:25px;height:25px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.toast{
-  position:fixed;left:50%;bottom:88px;transform:translateX(-50%) translateY(20px);opacity:0;z-index:10;
-  width:min(420px,calc(100% - 28px));background:#f0f3f7;color:#0d1117;border-radius:8px;padding:12px 14px;
-  font-weight:750;text-align:center;transition:.18s
-}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.hidden{display:none!important}
-@keyframes spin{to{transform:rotate(360deg)}}
-@media (max-width:360px){
-  .section-title{font-size:28px}
-  .connect{width:190px;height:190px;font-size:22px}
-  .quickrow{grid-template-columns:1fr}
-}
+  :root{
+    --bg:#f4f6fb; --card:#ffffff; --text:#10141c; --muted:#5b6573;
+    --line:#e4e8f0; --accent:#2f6df6; --accent-2:#13b08a;
+    --chip:#eef2f9; --chip-on:#2f6df6; --chip-on-text:#ffffff;
+    --ok:#13b08a; --warn-bg:#fff6e6; --warn-line:#ffd98a; --warn-text:#7a5200;
+    --tip-bg:#eafaf4; --tip-line:#9fe1cb; --tip-text:#0f6e56;
+    --radius:16px; --shadow:0 8px 30px rgba(20,30,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0d1117; --card:#161b22; --text:#e8edf5; --muted:#9aa6b6;
+      --line:#272d38; --accent:#5b8bff; --accent-2:#3ad0aa;
+      --chip:#1f2632; --chip-on:#5b8bff; --chip-on-text:#0d1117;
+      --warn-bg:#2a2410; --warn-line:#5a4a18; --warn-text:#ffce6b;
+      --tip-bg:#11241d; --tip-line:#1d5a47; --tip-text:#5dcaa5;
+      --shadow:0 8px 30px rgba(0,0,0,.35);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,system-ui,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:18px 14px 60px;
+  }
+  .wrap{max-width:660px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+        box-shadow:var(--shadow);padding:22px;margin-bottom:16px}
+  header.card{display:flex;align-items:center;gap:14px}
+  .logo{width:46px;height:46px;flex:0 0 auto;border-radius:12px;
+        background:linear-gradient(135deg,var(--accent),var(--accent-2));
+        display:flex;align-items:center;justify-content:center}
+  .logo svg{width:26px;height:26px}
+  h1{font-size:20px;margin:0;font-weight:700}
+  .sub{color:var(--muted);font-size:13.5px;margin-top:2px}
+  h2{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+     margin:0 0 10px;font-weight:600}
+  .seg{display:flex;gap:8px;flex-wrap:wrap}
+  .seg button{flex:1 1 auto;min-width:84px;border:1px solid var(--line);background:var(--chip);
+    color:var(--text);padding:11px 10px;border-radius:12px;font-size:14px;font-weight:600;
+    cursor:pointer;transition:.12s;display:flex;align-items:center;justify-content:center;gap:6px}
+  .seg button:hover{border-color:var(--accent)}
+  .seg button.on{background:var(--chip-on);color:var(--chip-on-text);border-color:transparent}
+  .seg button:disabled{opacity:.4;cursor:not-allowed}
+  .seg button small{font-weight:500;opacity:.8;font-size:11px}
+  .client{display:flex;align-items:center;justify-content:space-between;gap:12px;
+          flex-wrap:wrap;margin-bottom:18px}
+  .client .name{font-size:16px;font-weight:700}
+  .client .name span{display:block;font-size:12.5px;color:var(--muted);font-weight:500}
+  .btn{appearance:none;border:none;border-radius:12px;padding:12px 16px;font-size:14px;
+       font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;
+       gap:8px;justify-content:center;transition:.12s}
+  .btn.primary{background:var(--accent);color:#fff;width:100%}
+  .btn.primary:hover{filter:brightness(1.05)}
+  .btn.ghost{background:var(--chip);color:var(--text);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--accent)}
+  .btn.sm{padding:9px 12px;font-size:13px}
+  .qr-wrap{text-align:center;margin:6px 0 16px}
+  .qr-box{display:inline-block;background:#fff;padding:14px;border-radius:14px;
+          border:1px solid var(--line)}
+  .qr-box svg{width:188px;height:188px;display:block}
+  .qr-cap{color:var(--muted);font-size:12.5px;margin-top:8px}
+  .copyrow{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .dlrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .copyrow .btn{flex:1 1 auto}
+  ol.steps{margin:0;padding-left:0;list-style:none;counter-reset:s}
+  ol.steps li{counter-increment:s;position:relative;padding:0 0 14px 38px;font-size:14.5px}
+  ol.steps li:before{content:counter(s);position:absolute;left:0;top:-2px;width:26px;height:26px;
+    background:var(--chip);border:1px solid var(--line);border-radius:50%;display:flex;
+    align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--accent)}
+  ol.steps li:last-child{padding-bottom:0}
+  ol.steps b{font-weight:700}
+  .tip{background:var(--tip-bg);border:1px solid var(--tip-line);color:var(--tip-text);
+       border-radius:12px;padding:12px 14px;font-size:13.5px;margin-top:18px}
+  .tip b{font-weight:700}
+  .adv{margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--chip)}
+  .adv summary{cursor:pointer;font-weight:600;font-size:13.5px;list-style:none;user-select:none}
+  .adv summary::-webkit-details-marker{display:none}
+  .adv summary:before{content:"⚙ "}
+  .adv .advbody{margin-top:10px;font-size:13.5px;line-height:1.55}
+  .adv .advbody b{font-weight:700}
+  .banner{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-text);
+          border-radius:12px;padding:12px 14px;font-size:13.5px;margin-bottom:16px}
+  a{color:var(--accent)}
+  .foot{color:var(--muted);font-size:12.5px;text-align:center;margin-top:6px}
+  .lockmsg{margin:0;color:var(--muted);font-size:14.5px;line-height:1.6}
+  details.admin{margin-top:14px;border-top:1px dashed var(--line);padding-top:14px}
+  details.admin summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;
+                        list-style:none;user-select:none}
+  details.admin summary::-webkit-details-marker{display:none}
+  details.admin summary:before{content:"⚙ "}
+  .field{margin-top:12px}
+  .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px;font-weight:600}
+  .field input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;
+    background:var(--bg);color:var(--text);font-size:13.5px;font-family:inherit}
+  .out{margin-top:12px;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+       padding:12px;font-size:12.5px;word-break:break-all;display:none}
+  .out.show{display:block}
+  .hide{display:none!important}
+  .flash{background:var(--ok)!important;color:#fff!important}
 </style>
 </head>
 <body>
-<div class="app" id="app">
-  <div id="locked" class="locked hidden">
-    <div class="panel">
-      <div class="brand" style="margin-bottom:18px">
-        <div class="brandmark"><span>Z</span></div>
-        <div><h1>Zentra</h1><small>личный защищенный доступ</small></div>
-      </div>
-      <h2 class="section-title">Откройте персональную ссылку</h2>
-      <p class="section-copy">Профиль подключения хранится только в вашей персональной ссылке. Если вы администратор, добавьте <b>?admin=1</b> в адрес.</p>
-      <button class="primary" id="openDemo" type="button">Открыть демо-интерфейс</button>
+<div class="wrap">
+
+  <header class="card">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <path d="M9 12l2 2 4-4"/>
+      </svg>
+    </div>
+    <div>
+      <h1 id="greeting">Подключение</h1>
+      <div class="sub" id="subtitle">Выберите устройство и подключитесь за минуту</div>
+    </div>
+  </header>
+
+  <div class="card" id="locked" style="display:none">
+    <p class="lockmsg">Эта страница открывается по персональной ссылке.
+    Откройте ссылку, которую вам отправили, чтобы продолжить настройку.</p>
+  </div>
+
+  <div id="main">
+  <div class="card">
+    <div class="banner" id="demoBanner">
+      <b>Демо-режим.</b> Это пример. Для реального подключения откройте
+      персональную ссылку, которую вам отправили.
+    </div>
+
+    <h2>Сервер</h2>
+    <div class="seg" id="serverSeg" style="margin-bottom:18px">
+      <button data-server="nl" class="on">🇳🇱 Нидерланды <small>основной</small></button>
+      <button data-server="us">🇺🇸 США <small>резерв</small></button>
+    </div>
+
+    <h2>Устройство</h2>
+    <div class="seg" id="deviceSeg">
+      <button data-device="windows" class="on">🖥 Windows</button>
+      <button data-device="android">🤖 Android</button>
+      <button data-device="tv">📺 Android TV</button>
+      <button data-device="ios">📱 iPhone</button>
     </div>
   </div>
 
-  <main id="main" class="hidden">
-    <section class="screen active" data-screen="home">
-      <div class="topbar">
-        <div class="brand">
-          <div class="brandmark"><span>Z</span></div>
-          <div><h1>Zentra</h1><small id="userLine">ID клиента</small></div>
-        </div>
-        <button class="iconbtn" id="adminToggle" title="Админ" type="button">
-          <svg viewBox="0 0 24 24"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 1 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1A2 2 0 1 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 1 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg>
-        </button>
-      </div>
+  <div class="card">
+    <div class="client">
+      <div class="name" id="clientName">Клиент</div>
+      <div class="dlrow" id="clientDl"></div>
+    </div>
 
-      <div class="hero">
-        <div class="status" id="connectHint">Скопируйте профиль и откройте его в приложении</div>
-        <button class="connect" id="connectBtn" type="button">Подключиться</button>
-        <div class="under-status">
-          <strong id="serverBadge">Нидерланды</strong>
-          <span id="deviceBadge">Android или Windows</span>
-        </div>
-        <div class="quickrow">
-          <div class="tile"><span>Передано</span><b id="sentBytes">0 Б</b></div>
-          <div class="tile"><span>Получено</span><b id="recvBytes">0 Б</b></div>
-        </div>
-        <div class="home-actions">
-          <button class="primary" id="openInApp" type="button">&#1044;&#1086;&#1073;&#1072;&#1074;&#1080;&#1090;&#1100; &#1074; &#1087;&#1088;&#1080;&#1083;&#1086;&#1078;&#1077;&#1085;&#1080;&#1077;</button>
-          <button class="secondary" id="updateApp" type="button">Обновить приложение</button>
-        </div>
-      </div>
+    <div class="qr-wrap" id="qrWrap">
+      <div class="qr-box" id="qrBox"></div>
+      <div class="qr-cap" id="qrCap">Отсканируйте QR в приложении</div>
+    </div>
 
-      <div class="panel admin" id="adminPanel">
-        <h2 class="section-title" style="font-size:24px">Создать ссылку</h2>
-        <p class="section-copy">Вставьте VLESS-профиль клиента. Конфиг попадет только в hash-ссылку и не отправится на сервер хостинга.</p>
-        <div class="field"><label>Имя пользователя</label><input id="adminName" placeholder="Например: Алексей" autocomplete="off"></div>
-        <div class="field"><label>VLESS Нидерланды</label><textarea id="adminNl" rows="3" placeholder="vless://..."></textarea></div>
-        <div class="field"><label>VLESS США или резервный сервер</label><textarea id="adminUs" rows="3" placeholder="необязательно"></textarea></div>
-        <button class="primary" id="makeLink" type="button">Создать персональную ссылку</button>
-        <div class="output" id="linkOut"></div>
-        <button class="secondary hidden" id="copyLink" type="button" style="width:100%;margin-top:10px">Скопировать ссылку</button>
-      </div>
-    </section>
+    <div class="copyrow">
+      <button class="btn primary" id="copyCfg">📋 Скопировать конфиг</button>
+    </div>
 
-    <section class="screen" data-screen="servers">
-      <h2 class="section-title">Серверы</h2>
-      <p class="section-copy">Выберите профиль. Для семьи до 30 пользователей лучше выдавать отдельного клиента каждому человеку.</p>
-      <div class="panel" id="serverList"></div>
-      <button class="secondary" id="copyCurrent" type="button" style="width:100%">Скопировать текущий профиль</button>
-    </section>
+    <ol class="steps" id="steps"></ol>
 
-    <section class="screen" data-screen="tunnel">
-      <h2 class="section-title">Раздельное туннелирование</h2>
-      <p class="section-copy">Настройте понятный список приложений или сайтов. Это меню помогает пользователю повторить настройки в v2rayNG/v2rayN.</p>
-      <div class="panel">
-        <div class="switch-row">
-          <div>
-            <b>Туннелирование включено</b>
-            <div style="color:var(--muted);font-size:13px;margin-top:4px">Показывать только нужные правила</div>
-          </div>
-          <button class="switch on" id="tunnelSwitch" type="button" aria-label="Переключить"></button>
-        </div>
-        <div class="tabs">
-          <button class="active" data-tunnel="apps" type="button">Приложения</button>
-          <button data-tunnel="sites" type="button">Сайты</button>
-        </div>
-        <div class="mode">
-          <button class="active" data-mode="only" type="button">Только список работает через VPN</button>
-          <button data-mode="except" type="button">Все через VPN, кроме списка</button>
-        </div>
-        <div class="list" id="tunnelList"></div>
-        <div class="inputrow">
-          <input id="tunnelInput" placeholder="Название приложения">
-          <button class="primary" id="addTunnel" type="button">+</button>
-        </div>
-      </div>
-      <button class="secondary" id="copyTunnelHelp" type="button" style="width:100%">Скопировать инструкцию</button>
-    </section>
+    <div class="tip">
+      <b>Совет:</b> добавьте <u>оба</u> сервера и включите авто-выбор (Test / URL test) —
+      если один недоступен, приложение само переключится на другой.
+    </div>
 
-    <section class="screen" data-screen="guide">
-      <div class="guide-head">
-        <div>
-          <h2 class="section-title" style="margin-bottom:0">Инструкция</h2>
-          <p class="section-copy" style="margin:8px 0 0">QR-код и короткие шаги для выбранного устройства.</p>
-        </div>
-      </div>
-      <div class="select" id="deviceSelect">
-        <button data-device="android" type="button">Android</button>
-        <button data-device="windows" type="button">Windows</button>
-        <button data-device="tv" type="button">Android TV</button>
-        <button data-device="ios" type="button">iPhone</button>
-      </div>
-      <div class="panel">
-        <div class="qrwrap" id="qrWrap"><div class="qrbox" id="qrBox"></div></div>
-        <button class="primary" id="copyFromGuide" type="button" style="width:100%;margin-bottom:14px">Скопировать профиль</button>
-        <button class="secondary" id="openFromGuide" type="button" style="width:100%;margin-bottom:14px">&#1054;&#1090;&#1082;&#1088;&#1099;&#1090;&#1100; &#1074; Zentra</button>
-        <button class="secondary" id="updateFromGuide" type="button" style="width:100%;margin-bottom:14px">Обновить приложение</button>
-        <ol class="steps" id="guideSteps"></ol>
-      </div>
-    </section>
-  </main>
+    <details class="adv">
+      <summary>Раздельное туннелирование (по приложениям)</summary>
+      <div class="advbody" id="splitBody"></div>
+    </details>
 
-  <nav class="nav hidden" id="nav">
-    <button class="active" data-nav="home" type="button">
-      <svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
-      Главная
-    </button>
-    <button data-nav="servers" type="button">
-      <svg viewBox="0 0 24 24"><path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
-      Серверы
-    </button>
-    <button data-nav="tunnel" type="button">
-      <svg viewBox="0 0 24 24"><path d="M4 7h7"/><path d="M13 7h7"/><path d="M4 17h7"/><path d="M13 17h7"/><circle cx="12" cy="7" r="2"/><circle cx="12" cy="17" r="2"/></svg>
-      Туннель
-    </button>
-    <button data-nav="guide" type="button">
-      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15Z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg>
-      Помощь
-    </button>
-  </nav>
+    <div class="foot" id="ovpnNote" style="margin-top:14px">
+      Не подключается ни на одном сервере? Напишите тому, кто выдал ссылку —
+      пришлём запасной вариант.
+    </div>
+  </div>
+  </div><!-- /#main -->
+
+  <div class="card" id="adminCard" style="display:none">
+    <details class="admin">
+      <summary>Для администратора — создать персональную ссылку</summary>
+      <div class="field">
+        <label>Имя пользователя (необязательно)</label>
+        <input id="aName" placeholder="Иван" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>vless-ссылка — Нидерланды (основной)</label>
+        <input id="aNl" placeholder="vless://...#VPN-NL" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>vless-ссылка — США (резерв)</label>
+        <input id="aUs" placeholder="vless://...#VPN-US" autocomplete="off">
+      </div>
+      <div class="copyrow" style="margin-top:14px;margin-bottom:0">
+        <button class="btn primary" id="aGen">🔗 Создать ссылку</button>
+      </div>
+      <div class="out" id="aOut"></div>
+      <div class="copyrow hide" id="aCopyRow" style="margin-top:10px;margin-bottom:0">
+        <button class="btn ghost sm" id="aCopy">📋 Скопировать ссылку</button>
+      </div>
+      <div class="foot" style="margin-top:12px;text-align:left">
+        Отправьте полученную ссылку пользователю любым удобным способом. В ней зашит
+        только его конфиг; ссылка открывает этот же портал уже с его профилем.
+      </div>
+    </details>
+  </div>
+
 </div>
-<div class="toast" id="toast"></div>
 
 <script>
 "use strict";
-var DEMO = {
-  demo:true,
-  name:"Zentra",
-  nl:"vless://11111111-2222-3333-4444-555555555555@87.199.193.232:443?type=tcp&security=reality&pbk=demoPublicKeyDemoPublicKeyDemoPublicKey0&fp=chrome&sni=www.amazon.com&sid=a1b2c3d4&spx=%2F&flow=xtls-rprx-vision#Zentra-NL",
-  us:""
-};
-var DEVICES = {
-  android:[
-    "Установите v2rayNG или будущий Zentra APK.",
-    "Нажмите кнопку «Скопировать профиль» или отсканируйте QR-код.",
-    "В приложении нажмите + и выберите импорт из буфера обмена.",
-    "Выберите профиль Zentra NL и нажмите кнопку запуска.",
-    "Для приложений откройте «Выбор приложений» и включите нужный режим."
-  ],
-  windows:[
-    "Запустите v2rayN или будущий Zentra for Windows.",
-    "Скопируйте профиль на этой странице.",
-    "В программе выберите импорт ссылок из буфера обмена.",
-    "Сделайте сервер активным и включите TUN или системный прокси.",
-    "Для сайтов используйте правила маршрутизации в настройках."
-  ],
-  tv:[
-    "Установите APK на Android TV через Downloader или USB.",
-    "Передайте ссылку на ТВ или импортируйте профиль из буфера обмена.",
-    "Выберите сервер Zentra NL.",
-    "Нажмите запуск и разрешите VPN-подключение.",
-    "Для отдельных приложений используйте режим Per-app proxy."
-  ],
-  ios:[
-    "Установите V2Box или Streisand из App Store.",
-    "Скопируйте профиль или отсканируйте QR.",
-    "Импортируйте профиль из буфера обмена.",
-    "Разрешите добавление VPN-профиля iOS.",
-    "На iPhone раздельное туннелирование по приложениям ограничено системой."
-  ]
-};
-var UPDATE_LINKS = {
-  android:"https://github.com/leyspringls-alt/app/releases/latest/download/v2rayNG-arm64.apk",
-  tv:"https://github.com/leyspringls-alt/app/releases/latest/download/v2rayNG-arm64.apk",
-  windows:"https://github.com/leyspringls-alt/app/releases/latest/download/v2rayN-windows.zip",
-  ios:"https://apps.apple.com/app/id6446814690"
-};
-var UPDATE_LABELS = {
-  android:"Скачать свежий APK",
-  tv:"Скачать свежий APK для TV",
-  windows:"Скачать свежий ZIP для Windows",
-  ios:"Открыть V2Box в App Store"
-};
-var qp = new URLSearchParams(location.search);
-var state = {
-  screen:"home",
-  server:localStorage.getItem("zentra.server") || "nl",
-  device:localStorage.getItem("zentra.device") || "android",
-  tunnelTab:localStorage.getItem("zentra.tunnelTab") || "apps",
-  tunnelMode:localStorage.getItem("zentra.tunnelMode") || "only",
-  tunnelOn:localStorage.getItem("zentra.tunnelOn") !== "0",
-  apps:JSON.parse(localStorage.getItem("zentra.apps") || '["ChatGPT","Claude","YouTube"]'),
-  sites:JSON.parse(localStorage.getItem("zentra.sites") || '["chatgpt.com","claude.ai","youtube.com"]')
-};
+
+/* ---------- утилиты base64url (UTF-8 безопасно) ---------- */
 function b64urlEncode(str){
   var b64 = btoa(unescape(encodeURIComponent(str)));
-  return b64.replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
 function b64urlDecode(s){
-  s = s.replace(/-/g,"+").replace(/_/g,"/");
-  while(s.length % 4) s += "=";
+  s = s.replace(/-/g,'+').replace(/_/g,'/');
+  while(s.length % 4) s += '=';
   return decodeURIComponent(escape(atob(s)));
 }
+
+/* ---------- демо-конфиг (когда ссылка без данных) ---------- */
+var DEMO = {
+  demo:true, name:'',
+  nl:'vless://11111111-2222-3333-4444-555555555555@198.51.100.10:443?type=tcp&security=reality&pbk=DEMOpublicKeyDEMOpublicKeyDEMOpublicKey0&fp=chrome&sni=www.microsoft.com&sid=a1b2c3d4&spx=%2F&flow=xtls-rprx-vision#VPN-NL',
+  us:'vless://11111111-2222-3333-4444-555555555555@203.0.113.20:443?type=tcp&security=reality&pbk=DEMOpublicKeyDEMOpublicKeyDEMOpublicKey0&fp=chrome&sni=www.microsoft.com&sid=a1b2c3d4&spx=%2F&flow=xtls-rprx-vision#VPN-US'
+};
+
+/* ---------- загрузка данных из ссылки (#d=...) ---------- */
 function loadData(){
   try{
-    var h = location.hash.replace(/^#/,"");
+    var h = location.hash.replace(/^#/,'');
     var p = new URLSearchParams(h);
-    var d = p.get("d");
+    var d = p.get('d');
     if(d){
       var obj = JSON.parse(b64urlDecode(d));
       if(obj && (obj.nl || obj.us)) return obj;
     }
   }catch(e){}
-  if(qp.has("demo")) return DEMO;
   return null;
 }
-var data = loadData();
-if(!data && qp.has("admin")) data = DEMO;
-function hashId(text){
-  var h = 2166136261;
-  for(var i=0;i<text.length;i++){
-    h ^= text.charCodeAt(i);
-    h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
+
+/* ---------- инструкции по устройствам ---------- */
+var DEVICES = {
+  windows:{
+    client:'v2rayN', clientSub:'для Windows 10/11',
+    downloads:[
+      {l:'Скачать (Windows)', u:'https://github.com/leyspringls-alt/app/releases/latest/download/v2rayN-windows.zip'},
+      {l:'Сайт v2rayN', u:'https://github.com/2dust/v2rayN/releases/latest'}
+    ],
+    split:'v2rayN направляет трафик по <b>правилам доменов/IP</b> (вкладка «Маршрутизация»), а не по приложениям. Чтобы выбирать именно приложения, используйте клиент <b>Hiddify</b> в режиме TUN: Settings → Per-app proxy.',
+    steps:[
+      'Скачайте <b>v2rayN</b> (кнопка справа сверху), распакуйте архив и запустите <b>v2rayN.exe</b>.',
+      'Нажмите кнопку <b>«Скопировать конфиг»</b> ниже.',
+      'В v2rayN: меню <b>«Серверы» → «Импорт из буфера обмена»</b> (или Ctrl+V).',
+      'Повторите для второго сервера, чтобы в списке были и Нидерланды, и США.',
+      'Выделите оба сервера → <b>«Серверы» → «Тест задержки» (Ctrl+T)</b>, выберите более быстрый (ПКМ → «Назначить активным»).',
+      'Справа внизу включите режим <b>«Системный прокси»</b>. Готово — проверьте на <a href="https://2ip.ru" target="_blank" rel="noopener">2ip.ru</a>.'
+    ]
+  },
+  android:{
+    client:'v2rayNG', clientSub:'Google Play / RuStore / GitHub',
+    downloads:[
+      {l:'Скачать APK', u:'https://github.com/leyspringls-alt/app/releases/latest/download/v2rayNG-arm64.apk'},
+      {l:'Google Play', u:'https://play.google.com/store/apps/details?id=com.v2ray.ang'}
+    ],
+    split:'Откройте настройки v2rayNG (значок ⚙) → <b>«Per-app proxy»</b>. Включите и выберите режим: через VPN <u>только отмеченные</u> приложения, либо <u>все, кроме отмеченных</u>. Отметьте приложения, сохраните и переподключитесь (▶).',
+    steps:[
+      'Установите <b>v2rayNG</b> из Google Play, RuStore или по кнопке справа сверху.',
+      'В приложении нажмите <b>«+»</b> вверху → <b>«Сканировать QR-код»</b> и наведите на QR выше.',
+      'Так же добавьте второй сервер (или нажмите «Скопировать конфиг» и выберите «Импорт из буфера обмена»).',
+      'Нажмите <b>«⋮» → «Проверить профили»</b> — приложение покажет задержку каждого сервера.',
+      'Выберите рабочий сервер и нажмите большую кнопку <b>▶</b> внизу, разрешите создание VPN. Готово.'
+    ]
+  },
+  tv:{
+    client:'v2rayNG', clientSub:'для Android TV (пульт)',
+    downloads:[
+      {l:'Скачать APK', u:'https://github.com/leyspringls-alt/app/releases/latest/download/v2rayNG-arm64.apk'},
+      {l:'Universal APK', u:'https://github.com/leyspringls-alt/app/releases/latest/download/v2rayNG-universal.apk'}
+    ],
+    split:'Так же, как на Android: настройки v2rayNG → <b>«Per-app proxy»</b> → выберите приложения (например, только онлайн-кинотеатр). Локальные сервисы и YouTube при этом идут напрямую.',
+    steps:[
+      'Установите <b>v2rayNG</b> на ТВ: из RuStore, либо через приложение <b>Downloader</b>, либо APK с USB-флешки.',
+      'Вводить QR с пульта неудобно — проще <b>импорт по ссылке</b>: нажмите «Скопировать конфиг», вставьте в v2rayNG через <b>«+» → «Импорт из буфера обмена»</b>.',
+      'Альтернатива: отсканируйте QR выше камерой <b>телефона</b> и перешлите ссылку на ТВ.',
+      'Добавьте оба сервера, затем <b>«⋮» → «Проверить профили»</b> и выберите рабочий.',
+      'Нажмите <b>▶</b>, разрешите VPN. Управление дальше — с пульта.'
+    ]
+  },
+  ios:{
+    client:'v2box или Streisand', clientSub:'App Store, бесплатно',
+    downloads:[
+      {l:'V2Box (App Store)', u:'https://apps.apple.com/app/id6446814690'},
+      {l:'Streisand (App Store)', u:'https://apps.apple.com/app/id6450534064'}
+    ],
+    split:'iOS не позволяет выбирать VPN <b>по приложениям</b>. Но есть маршрутизация <b>по правилам</b> (домены/страны) в разделе «Routing» клиента V2Box/Streisand — например, через VPN только нужные сайты, остальное напрямую.',
+    steps:[
+      'Установите <b>v2box</b> (или <b>Streisand</b>) из App Store. <i>Shadowrocket — платный и требует не-российский Apple ID.</i>',
+      'Нажмите «Скопировать конфиг» ниже, в v2box выберите <b>«+» → «Import from clipboard»</b> (или «Scan QR» для QR выше).',
+      'Добавьте оба сервера — Нидерланды и США.',
+      'Выберите сервер или режим авто-выбора.',
+      'Нажмите переключатель <b>Connect</b> и разрешите добавление VPN-профиля iOS. Готово.'
+    ]
   }
-  return Math.abs(h >>> 0).toString().slice(0,9);
+};
+
+var SERVERS = { nl:'Нидерланды', us:'США' };
+
+/* ---------- состояние ---------- */
+var qp = new URLSearchParams(location.search);
+var data = loadData();
+if(!data && qp.has('demo')) data = DEMO;   // демо-превью только при ?demo=1
+var state = {
+  device: localStorage.getItem('vpnportal.device') || 'windows',
+  server: localStorage.getItem('vpnportal.server') || 'nl'
+};
+if(!DEVICES[state.device]) state.device = 'windows';
+if(state.server !== 'nl' && state.server !== 'us') state.server = 'nl';
+
+/* ---------- генерация QR ---------- */
+function renderQR(text){
+  var box = document.getElementById('qrBox');
+  var wrap = document.getElementById('qrWrap');
+  var cap = document.getElementById('qrCap');
+  if(typeof qrcode === 'undefined' || !text){
+    wrap.classList.add('hide');
+    return;
+  }
+  try{
+    var q = qrcode(0, 'L');        // авто-версия, уровень коррекции L (вмещает длинные ссылки)
+    q.addData(text);
+    q.make();
+    box.innerHTML = q.createSvgTag({ cellSize:4, margin:1, scalable:true });
+    cap.textContent = 'Сервер: ' + SERVERS[state.server] + ' — отсканируйте в приложении';
+    wrap.classList.remove('hide');
+  }catch(e){
+    wrap.classList.add('hide');
+  }
 }
-function normalizeConfig(text){
-  return String(text || "").trim().replace(/[\r\n\t]/g,"");
+
+/* ---------- основной рендер ---------- */
+function render(){
+  // приветствие / демо
+  document.getElementById('demoBanner').style.display = data.demo ? '' : 'none';
+  var g = document.getElementById('greeting');
+  var sub = document.getElementById('subtitle');
+  if(data.name){
+    g.textContent = 'Привет, ' + data.name + '!';
+  }else{
+    g.textContent = 'Подключение';
+  }
+  sub.textContent = 'Выберите устройство и подключитесь за минуту';
+
+  // доступность серверов
+  var segS = document.getElementById('serverSeg');
+  Array.prototype.forEach.call(segS.children, function(b){
+    var s = b.getAttribute('data-server');
+    var has = !!data[s];
+    b.disabled = !has;
+    b.classList.toggle('on', has && s === state.server);
+  });
+  if(!data[state.server]){ state.server = data.nl ? 'nl' : 'us'; render(); return; }
+
+  // устройство
+  var segD = document.getElementById('deviceSeg');
+  Array.prototype.forEach.call(segD.children, function(b){
+    b.classList.toggle('on', b.getAttribute('data-device') === state.device);
+  });
+
+  var dev = DEVICES[state.device];
+  document.getElementById('clientName').innerHTML = dev.client + '<span>' + dev.clientSub + '</span>';
+  var dl = document.getElementById('clientDl');
+  dl.innerHTML = '';
+  dev.downloads.forEach(function(d){
+    var a = document.createElement('a');
+    a.className = 'btn ghost sm';
+    a.href = d.u; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = '⬇ ' + d.l;
+    dl.appendChild(a);
+  });
+
+  // шаги
+  var ol = document.getElementById('steps');
+  ol.innerHTML = '';
+  dev.steps.forEach(function(s){
+    var li = document.createElement('li');
+    li.innerHTML = s;
+    ol.appendChild(li);
+  });
+
+  document.getElementById('splitBody').innerHTML = dev.split;
+
+  renderQR(data[state.server]);
 }
-function isSupportedProfile(text){
-  return /^(vless|vmess|trojan|ss):\/\//i.test(normalizeConfig(text));
+
+/* ---------- копирование ---------- */
+function flash(btn, label){
+  var old = btn.textContent;
+  btn.textContent = label || '✓ Скопировано';
+  btn.classList.add('flash');
+  setTimeout(function(){ btn.textContent = old; btn.classList.remove('flash'); }, 1400);
 }
-function currentConfig(){ return data ? normalizeConfig(data[state.server] || data.nl || data.us || "") : ""; }
-function toast(text){
-  var t = document.getElementById("toast");
-  t.textContent = text;
-  t.classList.add("show");
-  clearTimeout(toast.timer);
-  toast.timer = setTimeout(function(){ t.classList.remove("show"); },1600);
-}
-function copyText(text,label){
-  if(!text){ toast("Нет профиля для копирования"); return; }
+function copyText(text, btn){
+  if(!text) return;
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(function(){ toast(label || "Скопировано"); }).catch(function(){ legacyCopy(text,label); });
-  }else legacyCopy(text,label);
+    navigator.clipboard.writeText(text).then(function(){ flash(btn); }).catch(function(){ legacyCopy(text, btn); });
+  }else{ legacyCopy(text, btn); }
 }
-function legacyCopy(text,label){
-  var ta=document.createElement("textarea");
-  ta.value=text;ta.style.position="fixed";ta.style.opacity="0";
-  document.body.appendChild(ta);ta.select();
-  try{document.execCommand("copy");toast(label || "Скопировано");}catch(e){toast("Скопируйте вручную");}
+function legacyCopy(text, btn){
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); flash(btn); }catch(e){}
   document.body.removeChild(ta);
 }
-function renderQR(){
-  var wrap=document.getElementById("qrWrap");
-  var box=document.getElementById("qrBox");
-  var cfg=currentConfig();
-  if(typeof qrcode==="undefined" || !cfg){ wrap.classList.add("hidden"); return; }
-  try{
-    var q=qrcode(0,"L");
-    q.addData(cfg);
-    q.make();
-    box.innerHTML=q.createSvgTag({cellSize:4,margin:1,scalable:true});
-    wrap.classList.remove("hidden");
-  }catch(e){ wrap.classList.add("hidden"); }
-}
-function showScreen(name){
-  state.screen=name;
-  document.querySelectorAll(".screen").forEach(function(s){s.classList.toggle("active",s.dataset.screen===name);});
-  document.querySelectorAll(".nav button").forEach(function(b){b.classList.toggle("active",b.dataset.nav===name);});
-  if(name==="guide") renderGuide();
-}
-function renderServers(){
-  var list=document.getElementById("serverList");
-  var servers=[
-    {id:"nl",name:"Нидерланды",hint:"основной профиль",flag:"NL",speed:"активен"},
-    {id:"us",name:"США",hint:"резервный профиль",flag:"US",speed:"резерв"}
-  ];
-  list.innerHTML=servers.map(function(s){
-    var available=!!data[s.id];
-    var cls="server"+(state.server===s.id?" active":"")+(available?"":" disabled");
-    return '<div class="'+cls+'" data-server="'+s.id+'" style="'+(available?"":"opacity:.42")+'">'+
-      '<div class="radio"></div><div class="server-name"><b>'+s.name+'</b><span>'+s.hint+'</span></div>'+
-      '<div class="flag '+(s.id==="us"?"us":"")+'">'+s.flag+'</div></div>';
-  }).join("");
-  list.querySelectorAll(".server").forEach(function(row){
-    row.addEventListener("click",function(){
-      var id=row.dataset.server;
-      if(!data[id]) return;
-      state.server=id;
-      localStorage.setItem("zentra.server",id);
-      render();
-    });
-  });
-}
-function renderTunnel(){
-  document.getElementById("tunnelSwitch").classList.toggle("on",state.tunnelOn);
-  document.querySelectorAll("[data-tunnel]").forEach(function(b){b.classList.toggle("active",b.dataset.tunnel===state.tunnelTab);});
-  document.querySelectorAll("[data-mode]").forEach(function(b){b.classList.toggle("active",b.dataset.mode===state.tunnelMode);});
-  var items=state[state.tunnelTab];
-  document.getElementById("tunnelInput").placeholder=state.tunnelTab==="apps" ? "Название приложения" : "веб-сайт или IP";
-  document.getElementById("tunnelList").innerHTML=items.map(function(x,i){
-    return '<div class="list-item"><span>'+escapeHtml(x)+'</span><button class="delete" data-i="'+i+'" type="button">×</button></div>';
-  }).join("");
-  document.querySelectorAll(".delete").forEach(function(b){
-    b.addEventListener("click",function(){
-      state[state.tunnelTab].splice(Number(b.dataset.i),1);
-      saveTunnel();renderTunnel();
-    });
-  });
-}
-function saveTunnel(){
-  localStorage.setItem("zentra.apps",JSON.stringify(state.apps));
-  localStorage.setItem("zentra.sites",JSON.stringify(state.sites));
-  localStorage.setItem("zentra.tunnelTab",state.tunnelTab);
-  localStorage.setItem("zentra.tunnelMode",state.tunnelMode);
-  localStorage.setItem("zentra.tunnelOn",state.tunnelOn ? "1" : "0");
-}
-function renderGuide(){
-  document.querySelectorAll("[data-device]").forEach(function(b){b.classList.toggle("active",b.dataset.device===state.device);});
-  var steps=DEVICES[state.device] || DEVICES.android;
-  document.getElementById("guideSteps").innerHTML=steps.map(function(s){return "<li>"+s+"</li>";}).join("");
-  document.getElementById("updateFromGuide").textContent=UPDATE_LABELS[state.device] || "Обновить приложение";
-  renderQR();
-}
-function render(){
-  if(!data){
-    document.getElementById("locked").classList.remove("hidden");
-    document.getElementById("main").classList.add("hidden");
-    document.getElementById("nav").classList.add("hidden");
-    return;
-  }
-  document.getElementById("locked").classList.add("hidden");
-  document.getElementById("main").classList.remove("hidden");
-  document.getElementById("nav").classList.remove("hidden");
-  if(!data[state.server]) state.server=data.nl ? "nl" : "us";
-  var id=hashId((data.name || "")+(data.nl || "")+(data.us || ""));
-  document.getElementById("userLine").textContent=(data.name ? data.name+" · " : "")+"ID "+id;
-  document.getElementById("serverBadge").textContent=state.server==="nl" ? "Нидерланды · Zentra NL" : "США · резерв";
-  document.getElementById("deviceBadge").textContent=state.device==="windows" ? "Windows профиль готов" : "Android профиль готов";
-  document.getElementById("updateApp").textContent=UPDATE_LABELS[state.device] || "Обновить приложение";
-  renderServers();
-  renderTunnel();
-  renderGuide();
-}
-function escapeHtml(str){
-  return String(str).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c];});
-}
-document.getElementById("openDemo").addEventListener("click",function(){
-  location.href=location.pathname+"?demo=1";
-});
-document.getElementById("connectBtn").addEventListener("click",function(){
-  this.classList.add("connected");
-  document.getElementById("connectHint").textContent="Профиль скопирован. Откройте его в приложении.";
-  copyText(currentConfig(),"Профиль Zentra скопирован");
-});
-document.getElementById("copyCurrent").addEventListener("click",function(){copyText(currentConfig(),"Профиль сервера скопирован");});
-document.getElementById("copyFromGuide").addEventListener("click",function(){copyText(currentConfig(),"Профиль скопирован");});
-function openInZentra(){
-  var cfg=currentConfig();
-  if(!isSupportedProfile(cfg)){
-    toast("Need a vless:// profile from 3X-UI");
-    return;
-  }
-  copyText(cfg,"VLESS profile copied");
-  setTimeout(function(){
-    location.href="v2rayng://install-config?url="+encodeURIComponent(cfg);
-  },120);
-}
-function openUpdate(){
-  var url=UPDATE_LINKS[state.device] || UPDATE_LINKS.android;
-  window.open(url,"_blank","noopener");
-  toast("Открываю обновление");
-}
-document.getElementById("openInApp").addEventListener("click",openInZentra);
-document.getElementById("updateApp").addEventListener("click",openUpdate);
-document.getElementById("openFromGuide").addEventListener("click",openInZentra);
-document.getElementById("updateFromGuide").addEventListener("click",openUpdate);
-document.getElementById("adminToggle").addEventListener("click",function(){
-  document.getElementById("adminPanel").classList.toggle("active");
-});
-document.getElementById("makeLink").addEventListener("click",function(){
-  var name=document.getElementById("adminName").value.trim();
-  var nl=document.getElementById("adminNl").value.trim();
-  var us=document.getElementById("adminUs").value.trim();
-  // admin profile validation
-  nl=normalizeConfig(nl);
-  us=normalizeConfig(us);
-  if((nl && !isSupportedProfile(nl)) || (us && !isSupportedProfile(us))){toast("Need a vless:// profile");return;}
-  if(!nl && !us){toast("Нужна хотя бы одна VLESS-ссылка");return;}
-  var payload={};
-  if(name) payload.name=name;
-  if(nl) payload.nl=nl;
-  if(us) payload.us=us;
-  var link=location.origin+location.pathname+"#d="+b64urlEncode(JSON.stringify(payload));
-  var out=document.getElementById("linkOut");
-  out.textContent=link;
-  out.dataset.link=link;
-  out.classList.add("active");
-  document.getElementById("copyLink").classList.remove("hidden");
-});
-document.getElementById("copyLink").addEventListener("click",function(){copyText(document.getElementById("linkOut").dataset.link,"Персональная ссылка скопирована");});
-document.getElementById("nav").addEventListener("click",function(e){
-  var b=e.target.closest("button[data-nav]");
-  if(b) showScreen(b.dataset.nav);
-});
-document.getElementById("serverList").addEventListener("click",function(e){
-  var row=e.target.closest(".server");
-  if(row && data[row.dataset.server]){state.server=row.dataset.server;localStorage.setItem("zentra.server",state.server);render();}
-});
-document.getElementById("deviceSelect").addEventListener("click",function(e){
-  var b=e.target.closest("button[data-device]");
-  if(!b) return;
-  state.device=b.dataset.device;
-  localStorage.setItem("zentra.device",state.device);
+
+/* ---------- обработчики ---------- */
+document.getElementById('serverSeg').addEventListener('click', function(e){
+  var b = e.target.closest('button'); if(!b || b.disabled) return;
+  state.server = b.getAttribute('data-server');
+  localStorage.setItem('vpnportal.server', state.server);
   render();
 });
-document.querySelectorAll("[data-tunnel]").forEach(function(b){
-  b.addEventListener("click",function(){state.tunnelTab=b.dataset.tunnel;saveTunnel();renderTunnel();});
+document.getElementById('deviceSeg').addEventListener('click', function(e){
+  var b = e.target.closest('button'); if(!b) return;
+  state.device = b.getAttribute('data-device');
+  localStorage.setItem('vpnportal.device', state.device);
+  render();
 });
-document.querySelectorAll("[data-mode]").forEach(function(b){
-  b.addEventListener("click",function(){state.tunnelMode=b.dataset.mode;saveTunnel();renderTunnel();});
+document.getElementById('copyCfg').addEventListener('click', function(){
+  if(!data) return;
+  copyText(data[state.server], this);
 });
-document.getElementById("tunnelSwitch").addEventListener("click",function(){state.tunnelOn=!state.tunnelOn;saveTunnel();renderTunnel();});
-document.getElementById("addTunnel").addEventListener("click",function(){
-  var input=document.getElementById("tunnelInput");
-  var value=input.value.trim();
-  if(!value) return;
-  state[state.tunnelTab].push(value);
-  input.value="";
-  saveTunnel();renderTunnel();
+
+/* ---------- админ: генерация ссылки ---------- */
+document.getElementById('aGen').addEventListener('click', function(){
+  var name = document.getElementById('aName').value.trim();
+  var nl = document.getElementById('aNl').value.trim();
+  var us = document.getElementById('aUs').value.trim();
+  var out = document.getElementById('aOut');
+  if(!nl && !us){
+    out.classList.add('show'); out.textContent = 'Укажите хотя бы одну vless-ссылку.';
+    document.getElementById('aCopyRow').classList.add('hide');
+    return;
+  }
+  var payload = {}; if(name) payload.name = name; if(nl) payload.nl = nl; if(us) payload.us = us;
+  var base = location.origin + location.pathname;
+  var link = base + '#d=' + b64urlEncode(JSON.stringify(payload));
+  out.classList.add('show'); out.textContent = link;
+  out.dataset.link = link;
+  document.getElementById('aCopyRow').classList.remove('hide');
 });
-document.getElementById("copyTunnelHelp").addEventListener("click",function(){
-  var kind=state.tunnelTab==="apps" ? "приложения" : "сайты";
-  var mode=state.tunnelMode==="only" ? "только список через VPN" : "все через VPN, кроме списка";
-  var list=state[state.tunnelTab].join(", ");
-  copyText("Zentra: раздельное туннелирование — "+kind+". Режим: "+mode+". Список: "+list+".","Инструкция скопирована");
+document.getElementById('aCopy').addEventListener('click', function(){
+  copyText(document.getElementById('aOut').dataset.link, this);
 });
-if(!qp.has("admin")){
-  document.getElementById("adminToggle").style.display="none";
+
+/* ---------- режимы отображения ---------- */
+// Панель администратора видна только при ?admin (генерация ссылок)
+document.getElementById('adminCard').style.display = qp.has('admin') ? '' : 'none';
+
+if(data){
+  document.getElementById('locked').style.display = 'none';
+  document.getElementById('main').style.display = '';
+  render();
 }else{
-  document.getElementById("adminPanel").classList.add("active");
+  // нет персональной ссылки — нейтральная заглушка
+  document.getElementById('main').style.display = 'none';
+  document.getElementById('locked').style.display = '';
+  document.getElementById('greeting').textContent = 'Подключение';
+  document.getElementById('subtitle').textContent = 'Откройте персональную ссылку для продолжения';
 }
-render();
 </script>
 </body>
 </html>
